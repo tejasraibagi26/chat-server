@@ -2,9 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const http = require("http");
+const data = require("./data");
+const users = data.users;
+const chat = data.chat;
+const constructor = require("./routes");
 
 const app = express();
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -17,39 +23,51 @@ app.get("/", (req, res) => {
   return res.send("Working");
 });
 
-const users = {};
+constructor(app);
+// const users = {};
 
 io.on("connection", (socket) => {
   console.log(`User connected with socketId: ${socket.id}`);
 
-  socket.on("join", (data) => {
-    socket.emit("chat-message", {
-      text: `${data.username} joined the room`,
-      username: "Admin",
-    });
-    socket.broadcast.to(data.roomName).emit("chat-message", {
-      text: `${data.username} joined the room`,
-      username: "Admin",
-    });
-
-    socket.join(data.roomName);
-    if (users[data.roomName] == null) {
-      users[data.roomName] = [];
+  socket.on("join", async (data, callback) => {
+    /*
+      Add user to the room
+      @params userId [String]
+      @params roomId [String]
+    */
+    try {
+      await users.addUserToRoom(data.userId, data.roomId);
+    } catch (error) {
+      callback(error);
     }
 
-    users[data.roomName].push(data.username);
+    socket.to(data.roomId).emit("chat-message", {
+      text: `${data.username} joined the room`,
+      username: "Admin",
+    });
 
-    console.log(users);
+    socket.join(data.roomId);
   });
 
-  socket.on("chat-text", (data) => {
-    console.log(data);
+  socket.on("chat-text", async (data, callback) => {
     const returnData = {
       text: data.text,
       username: data.username,
     };
-    socket.to(data.roomName).emit("chat-message", returnData);
-    console.log("Emitted text to room");
+
+    const msgObj = {
+      text: data.text,
+      userId: data.userId,
+      username: data.username,
+    };
+
+    try {
+      await chat.addMessagesToRoom(data.roomId, msgObj);
+      socket.to(data.roomId).emit("chat-message", returnData);
+      return;
+    } catch (error) {
+      return callback(error);
+    }
   });
 
   socket.on("leave", (data) => {
