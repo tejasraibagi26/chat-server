@@ -1,6 +1,6 @@
 {
   "mongoConfig": {
-    "serverUrl": "mongodb://localhost:27017/",
+    "serverUrl": "mongodb+srv://tejas26:B5x2OI54icbXuwV0@cluster0.c6tfu.mongodb.net/",
     "database": "socket-chat"
   }
 }
