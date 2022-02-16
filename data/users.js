@@ -36,11 +36,11 @@ const findUser = async (userId) => {
 
 const addUser = async (username, password) => {
   if (username == null || password == null)
-    throw "Username and Password are required";
+    throw { status: 400, msg: "Username and Password are required" };
 
   const users = await userCollection();
   const user = await users.findOne({ username });
-  if (user) throw "User already exists";
+  if (user) throw { status: 401, msg: "User already exists" };
 
   const hashPassword = await bcrypt.hash(password, SALT);
   const currentDateTime = new Date();
@@ -57,7 +57,7 @@ const addUser = async (username, password) => {
   if (addUser.insertedCount === 0)
     throw { status: 500, msg: "Error adding user." };
 
-  return { status: 200, msg: username };
+  return { status: 200, msg: { username, _id: addUser.insertedId } };
 };
 
 const addUserToRoom = async (userId, roomId) => {

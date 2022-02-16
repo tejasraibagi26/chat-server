@@ -1,6 +1,6 @@
 {
   "mongoConfig": {
-    "serverUrl": "mongodb+srv://tejas26:B5x2OI54icbXuwV0@cluster0.c6tfu.mongodb.net/",
+    "serverUrl": "mongodb+srv://traibagi:root123@chatcluster.faopk.mongodb.net/test",
     "database": "socket-chat"
   }
 }

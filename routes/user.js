@@ -5,13 +5,28 @@ const user = data.users;
 const { ObjectId } = require("mongodb");
 
 router.post("/login", async (req, res) => {
-  console.log(req.body);
   const { username, password } = req.body;
   try {
     const userData = await user.login(username, password);
     return res.json({ userData });
   } catch (error) {
-    console.log(error);
+    res.status(error.status).json({ error: error.msg });
+  }
+});
+
+router.post("/register", async (req, res) => {
+  const { username, password, confPassword } = req.body;
+  if (!username || !password || !confPassword)
+    return res.status(400).json({ error: "Missing form data" });
+
+  if (password !== confPassword)
+    return res.status(400).json({ error: "Passwords do not match" });
+
+  try {
+    const userData = await user.addUser(username, password);
+    return res.json({ userData });
+  } catch (error) {
+    res.status(error.status).json({ error: error.msg });
   }
 });
 
